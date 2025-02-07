@@ -1,13 +1,26 @@
-# clone project in a folder
-$ git clone git@github.com:basir/support-desk-react-socket-io-final.git
-# open folder in vs code
-$ cd support-desk-react-socket-io-final
-$ code .
-# run backend
-$ cd backend
-$ npm install
-$ npm start
-# run frontend in a new terminal
-$ cd frontend
-$ npm install
-$ npm start
+{
+ “_id” : ObjectId(“5809171b71e640556be904ef”),
+ “name” : “Sudheesh Shetty”,
+ “handle” : “sudheesh”,
+ “password” : “556624370”,
+ “phone” : “8888888888”,
+ “email” : “sudheeshshetty@gmail.com”,
+ “friends” : [
+    {
+      “name” : “abc”,
+      “status” : “Friend”
+    },
+    {
+      “name” : “xyz”,
+      “status” : “Friend”
+    }
+ ],
+ “__v” : 0
+}
+app.post(‘/register’,function(req,res){})
+
+app.post(‘/login’,function(req,res){})
+
+app.post(‘/friend_request’,function(req,res){})
+
+app.post(‘/friend_request/confirmed’,function(req,res){})
