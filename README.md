@@ -1,82 +1,114 @@
-@@ -1,7 +1,12 @@
-import strutils, asyncdispatch, sets, hashes
-import karax/[karaxdsl, vdom], jester, ws, ws/jester_extra, json
-import std/[strutils, asyncdispatch, sets, hashes, json]
-import karax/[karaxdsl, vdom], jester, ws, ws/jester_extra
+<!DOCTYPE html>
+<html lang="en">
 
-converter toString(x: VNode): string = $x
-type User = object
-  name: string
-  socket: WebSocket
-proc hash(x: User): Hash = hash(x.name)
-var chatrooms = initTable[string, HashSet[User]]()
-template index*(rest: untyped): untyped =
-  buildHtml(html(lang = "en")):
-    head:
-@@ -13,18 +18,12 @@ template index*(rest: untyped): untyped =
-      nav(class="container-fluid"):
-        ul: li: a(href = "/", class="secondary"): strong: text "Simple Chat"
-      main(class="container"): rest
-type User = object
-  username: string
-  socket: WebSocket
-proc hash(x: User): Hash = hash(x.username)
-proc chatInput(): VNode = buildHtml(input(name="message", id="clearinput", autofocus="", required=""))
-proc sendAll(users: HashSet[User], msg: string) =
-  for user in users: discard user.socket.send(msg)
-template buildMessage*(msg: untyped): untyped =
-  buildHtml(p(id="content", hx-swap-oob="beforeend")):
-    msg
-    br()
-var chatrooms = initTable[string, HashSet[User]]()
-  buildHtml(tdiv(id="content", hx-swap-oob="beforeend")):
-    tdiv: msg
-routes:
-  get "/":
-    let html = index:
-@@ -35,36 +34,36 @@ routes:
-          input(type="text", name="room")
-        label:
-          text "Username"
-          input(type="text", name="username")
-          input(type="text", name="name")
-        input(type="submit", value="Join")
-    resp html
-  get "/chat":
-    let html = index:
-      h1: text @"room"
-      tdiv(hx-ws="connect:/chat/" & @"room" & "/" & @"username"):
-      tdiv(hx-ws="connect:/chat/" & @"room" & "/" & @"name"):
-        p(id="content")
-        form(hx-ws="send", id="message"): chatInput()
-    resp html
-  get "/chat/@room/@username":
-  get "/chat/@room/@name":
-    var ws = await newWebSocket(request)
-    var user = User(username: @"username", socket: ws)
-    var user = User(name: @"name", socket: ws)
-    try:
-      chatrooms.mgetOrPut(@"room", initHashSet[User]()).incl(user)
-      let joined = buildMessage:
-        italic: text user.username
-        italic: text user.name
-        italic: text " has joined the room"
-      chatrooms[@"room"].sendAll(joined)
-      while user.socket.readyState == Open:
-        let sentMessage = (await user.socket.receiveStrPacket()).parseJson["message"]
-        discard user.socket.send(chatInput())
-        let reply = buildMessage:
-          bold: text user.username
-          bold: text user.name
-          text ": " & sentMessage.getStr()
-        discard user.socket.send(chatInput())
-        chatrooms[@"room"].sendAll(reply)
-    except:
-      chatrooms[@"room"].excl(user)
-      let left = buildMessage:
-        italic: text user.username
-        italic: text user.name
-        italic: text " has left the room"
-      chatrooms[@"room"].sendAll(left)
-    resp "" # need this so jester doesn't throw a fit
-    resp ""
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content=
+        "width=device-width, initial-scale=1.0">
+    <style>
+        .chat-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            max-width: 70%;
+            word-wrap: break-word;
+            display: flex;
+            align-items: center;
+        }
+
+        .sender-message {
+            background-color: #e0e0e0;
+            color: #000;
+            align-self: flex-start;
+        }
+
+        .receiver-message {
+            background-color: #4CAF50;
+            color: #fff;
+            align-self: flex-end;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .message input {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .message button {
+            padding: 8px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+    <title>Chat Template UI using HTML and CSS</title>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="message-container">
+            <div class="message sender-message">
+                <img src=
+"https://media.geeksforgeeks.org/wp-content/uploads/20220123013311/gfg.png" 
+                    alt="Sender Avatar"
+                    class="avatar">
+                Hello there!
+            </div>
+            <div class="message receiver-message">
+                <img src=
+"https://media.geeksforgeeks.org/wp-content/uploads/20210511160813/g4g.jpg"
+                    alt="Receiver Avatar" 
+                    class="avatar">
+                Hi! How can I help you today?
+            </div>
+            <div class="message sender-message">
+                <img src=
+"https://media.geeksforgeeks.org/wp-content/uploads/20220123013311/gfg.png" 
+                    alt="Sender Avatar"
+                    class="avatar">
+                I have a question about your products.
+            </div>
+            <div class="message receiver-message">
+                <img src=
+"https://media.geeksforgeeks.org/wp-content/uploads/20210511160813/g4g.jpg"
+                    alt="Receiver Avatar" 
+                    class="avatar">
+                Sure, feel free to ask!
+            </div>
+        </div>
+
+        <div class="message">
+            <input type="text" 
+                placeholder="Type your message...">
+            <button>Send</button>
+        </div>
+    </div>
+</body>
+
+</html>
